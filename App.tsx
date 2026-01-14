@@ -63,6 +63,19 @@ const Badge: React.FC<{ status: string }> = ({ status }) => {
   );
 };
 
+// Helper component to render dashboard metric cards (Moved here to fix hoisting ReferenceError)
+const DashboardStats = ({ stats }: { stats: { label: string; value: string | number; subValue: string }[] }) => (
+  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+    {stats.map((stat, i) => (
+      <Card key={i}>
+        <p className="text-slate-400 text-sm font-medium">{stat.label}</p>
+        <p className="text-3xl font-black text-white mt-1">{stat.value}</p>
+        <p className="text-[10px] text-slate-500 font-bold mt-2 uppercase tracking-tight">{stat.subValue}</p>
+      </Card>
+    ))}
+  </div>
+);
+
 // --- App Pages ---
 
 const AuthPage = ({ onLogin }: { onLogin: (user: User) => void }) => {
@@ -75,7 +88,6 @@ const AuthPage = ({ onLogin }: { onLogin: (user: User) => void }) => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (mode === 'register') {
-      // In this demo, registration just logs in a default user
       const demoUser = login('demo@user.com', 'password');
       if (demoUser) onLogin(demoUser);
       return;
@@ -132,7 +144,7 @@ const AuthPage = ({ onLogin }: { onLogin: (user: User) => void }) => {
         </form>
         
         <div className="mt-8 p-4 bg-slate-900/50 rounded-xl border border-slate-700/50">
-          <p className="text-[10px] text-slate-500 uppercase font-bold mb-2 tracking-widest">User Credentials</p>
+          <p className="text-[10px] text-slate-500 uppercase font-bold mb-2 tracking-widest">Demo Access</p>
           <div className="space-y-1 text-sm text-slate-300">
             <p className="flex justify-between"><span className="text-slate-400">Email:</span> <span className="font-mono">demo@user.com</span></p>
             <p className="flex justify-between"><span className="text-slate-400">Password:</span> <span className="font-mono">password</span></p>
@@ -505,7 +517,6 @@ const WalletView = ({ user, withdrawals, onRequestWithdrawal }: { user: User, wi
 const AdminLayout: React.FC<{ user: User; onLogout: () => void; children: React.ReactNode; currentPage: string; onNavigate: (p: string) => void }> = ({ user, onLogout, children, currentPage, onNavigate }) => {
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex">
-      {/* Sidebar Admin */}
       <aside className="hidden lg:flex flex-col w-72 bg-slate-900 border-r border-slate-800 shrink-0">
         <div className="p-8 flex items-center gap-3">
           <div className="w-12 h-12 bg-blue-600 rounded-2xl flex items-center justify-center shadow-lg shadow-blue-500/20">
@@ -543,7 +554,7 @@ const AdminLayout: React.FC<{ user: User; onLogout: () => void; children: React.
                <div className="w-8 h-8 rounded-full bg-blue-500/20 flex items-center justify-center">
                  <Icons.Users className="w-4 h-4 text-blue-400" />
                </div>
-               <p className="text-xs font-bold text-slate-400">T6068422</p>
+               <p className="text-xs font-bold text-slate-400">ADMIN</p>
              </div>
              <Button variant="danger" className="w-full text-xs py-2" onClick={onLogout}>Sign Out</Button>
            </Card>
@@ -565,19 +576,6 @@ const AdminLayout: React.FC<{ user: User; onLogout: () => void; children: React.
     </div>
   );
 };
-
-// Helper component to render dashboard metric cards
-const DashboardStats = ({ stats }: { stats: { label: string; value: string | number; subValue: string }[] }) => (
-  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-    {stats.map((stat, i) => (
-      <Card key={i}>
-        <p className="text-slate-400 text-sm font-medium">{stat.label}</p>
-        <p className="text-3xl font-black text-white mt-1">{stat.value}</p>
-        <p className="text-[10px] text-slate-500 font-bold mt-2 uppercase tracking-tight">{stat.subValue}</p>
-      </Card>
-    ))}
-  </div>
-);
 
 const AdminDashboard = ({ db }: { db: any }) => {
   const chartData = [
@@ -843,7 +841,6 @@ const App: React.FC = () => {
   } = useStore();
 
   useEffect(() => {
-    // If we're logged in, set default dashboard
     if (currentUser) {
       if (currentUser.role === UserRole.ADMIN) setPage('admin-dashboard');
       else setPage('dashboard');
@@ -871,11 +868,8 @@ const App: React.FC = () => {
     setActiveTask(null);
   };
 
-  // --- Router ---
-  
   if (!currentUser) return <AuthPage onLogin={setCurrentUser} />;
 
-  // Role: User Views
   if (currentUser?.role === UserRole.USER) {
     let content;
     switch (page) {
@@ -890,7 +884,6 @@ const App: React.FC = () => {
     return <UserLayout user={currentUser} onLogout={handleLogout} currentPage={page} onNavigate={setPage}>{content}</UserLayout>;
   }
 
-  // Role: Admin Views
   if (currentUser?.role === UserRole.ADMIN) {
     let content;
     switch (page) {
@@ -965,7 +958,7 @@ const App: React.FC = () => {
              <div className="space-y-4">
                 <div>
                   <label className="block text-xs font-bold text-slate-500 uppercase mb-2">Platform Currency</label>
-                  <Input value={db.settings.currency} onChange={() => {}} />
+                  <Input value={db.settings.currency} readOnly />
                 </div>
                 <div className="flex items-center justify-between p-4 bg-slate-900 rounded-xl border border-slate-700">
                   <div>
