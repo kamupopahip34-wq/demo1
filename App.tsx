@@ -65,83 +65,55 @@ const Badge: React.FC<{ status: string }> = ({ status }) => {
 
 // --- App Pages ---
 
-const DashboardStats = ({ stats }: { stats: any }) => (
-  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-    {stats.map((s: any, i: number) => (
-      <Card key={i} className="flex flex-col items-center justify-center text-center">
-        <span className="text-slate-400 text-sm mb-1">{s.label}</span>
-        <span className="text-2xl font-bold text-white">{s.value}</span>
-        {s.subValue && <span className="text-xs text-green-500 mt-1">{s.subValue}</span>}
-      </Card>
-    ))}
-  </div>
-);
-
-const LandingPage = ({ onNavigate }: { onNavigate: (p: string) => void }) => (
-  <div className="min-h-screen flex flex-col bg-gradient-to-br from-slate-950 via-slate-900 to-blue-950 overflow-hidden relative">
-    <div className="absolute top-0 left-0 w-full h-full pointer-events-none opacity-20">
-      <div className="absolute top-20 left-10 w-64 h-64 bg-blue-500 rounded-full blur-[120px]"></div>
-      <div className="absolute bottom-20 right-10 w-80 h-80 bg-purple-500 rounded-full blur-[120px]"></div>
-    </div>
-    
-    <nav className="p-6 flex justify-between items-center relative z-10">
-      <div className="flex items-center gap-2">
-        <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/20">
-          <Icons.Tasks className="w-6 h-6 text-white" />
-        </div>
-        <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-slate-400">TaskEarn</span>
-      </div>
-      <div className="flex gap-4">
-        <Button variant="ghost" onClick={() => onNavigate('login')}>Login</Button>
-        <Button onClick={() => onNavigate('register')}>Get Started</Button>
-      </div>
-    </nav>
-
-    <main className="flex-1 flex flex-col items-center justify-center px-6 text-center relative z-10">
-      <h1 className="text-5xl md:text-7xl font-black mb-6 tracking-tight leading-tight">
-        Complete Tasks.<br />
-        <span className="text-blue-500">Earn Crypto.</span>
-      </h1>
-      <p className="text-slate-400 text-lg md:text-xl max-w-2xl mb-10 leading-relaxed">
-        The ultimate platform for micro-tasks. Follow, share, or review and get paid instantly in BEP20 or TRC20 tokens. Join over 10,000 active earners today.
-      </p>
-      <div className="flex flex-col sm:flex-row gap-4 w-full max-w-md">
-        <Button className="flex-1 py-4 text-lg" onClick={() => onNavigate('register')}>Join the Community</Button>
-        <Button variant="secondary" className="flex-1 py-4 text-lg" onClick={() => onNavigate('login')}>Admin Dashboard</Button>
-      </div>
-    </main>
-
-    <footer className="p-8 grid grid-cols-2 md:grid-cols-4 gap-8 text-sm text-slate-500 relative z-10">
-      <div>© 2024 TaskEarn Inc.</div>
-      <div className="hover:text-slate-300 cursor-pointer">Terms & Conditions</div>
-      <div className="hover:text-slate-300 cursor-pointer">Privacy Policy</div>
-      <div className="hover:text-slate-300 cursor-pointer">Support</div>
-    </footer>
-  </div>
-);
-
-const LoginPage = ({ onLogin }: { onLogin: (user: User) => void }) => {
+const AuthPage = ({ onLogin }: { onLogin: (user: User) => void }) => {
   const { login } = useStore();
+  const [mode, setMode] = useState<'login' | 'register'>('login');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (mode === 'register') {
+      // In this demo, registration just logs in a default user
+      const demoUser = login('demo@user.com', 'password');
+      if (demoUser) onLogin(demoUser);
+      return;
+    }
     const user = login(email, password);
     if (user) onLogin(user);
-    else setError('Invalid credentials. Hint: Check metadata for Admin login.');
+    else setError('Invalid email or password.');
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-6 bg-slate-950">
-      <Card className="w-full max-w-md">
-        <div className="text-center mb-8">
+    <div className="min-h-screen flex items-center justify-center p-6 bg-slate-950 relative overflow-hidden">
+      <div className="absolute top-0 left-0 w-full h-full pointer-events-none opacity-20">
+        <div className="absolute top-20 left-10 w-64 h-64 bg-blue-500 rounded-full blur-[120px]"></div>
+        <div className="absolute bottom-20 right-10 w-80 h-80 bg-purple-500 rounded-full blur-[120px]"></div>
+      </div>
+
+      <Card className="w-full max-w-md relative z-10 border-blue-500/20">
+        <div className="text-center mb-6">
           <div className="w-16 h-16 bg-blue-600 rounded-2xl mx-auto mb-4 flex items-center justify-center shadow-2xl shadow-blue-500/40">
             <Icons.Tasks className="w-10 h-10 text-white" />
           </div>
-          <h2 className="text-2xl font-bold">Welcome Back</h2>
-          <p className="text-slate-500">Log in to manage your tasks</p>
+          <h2 className="text-2xl font-bold">TaskEarn</h2>
+          <p className="text-slate-500 text-sm">Join the leading micro-task platform</p>
+        </div>
+
+        <div className="flex bg-slate-900 p-1 rounded-xl mb-6">
+          <button 
+            onClick={() => { setMode('login'); setError(''); }}
+            className={`flex-1 py-2 rounded-lg text-sm font-bold transition-all ${mode === 'login' ? 'bg-slate-800 text-white shadow-sm' : 'text-slate-500 hover:text-slate-300'}`}
+          >
+            Login
+          </button>
+          <button 
+            onClick={() => { setMode('register'); setError(''); }}
+            className={`flex-1 py-2 rounded-lg text-sm font-bold transition-all ${mode === 'register' ? 'bg-slate-800 text-white shadow-sm' : 'text-slate-500 hover:text-slate-300'}`}
+          >
+            Sign Up
+          </button>
         </div>
         
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -153,19 +125,22 @@ const LoginPage = ({ onLogin }: { onLogin: (user: User) => void }) => {
             <label className="block text-sm font-medium text-slate-400 mb-2">Password</label>
             <Input type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="••••••••" required />
           </div>
-          {error && <p className="text-red-500 text-sm">{error}</p>}
-          <Button type="submit" className="w-full py-3">Sign In</Button>
+          {error && <p className="text-red-500 text-sm font-medium animate-pulse">{error}</p>}
+          <Button type="submit" className="w-full py-3 text-lg font-bold">
+            {mode === 'login' ? 'Sign In' : 'Create Account'}
+          </Button>
         </form>
         
         <div className="mt-8 p-4 bg-slate-900/50 rounded-xl border border-slate-700/50">
-          <p className="text-xs text-slate-500 uppercase font-bold mb-2">Demo Credentials</p>
-          <div className="space-y-1 text-sm">
-            <p><span className="text-slate-400">Admin:</span> {ADMIN_CREDENTIALS.email}</p>
-            <p><span className="text-slate-400">Pass:</span> {ADMIN_CREDENTIALS.password}</p>
-            <div className="h-px bg-slate-700 my-2"></div>
-            <p><span className="text-slate-400">User:</span> demo@user.com</p>
-            <p><span className="text-slate-400">Pass:</span> password</p>
+          <p className="text-[10px] text-slate-500 uppercase font-bold mb-2 tracking-widest">User Credentials</p>
+          <div className="space-y-1 text-sm text-slate-300">
+            <p className="flex justify-between"><span className="text-slate-400">Email:</span> <span className="font-mono">demo@user.com</span></p>
+            <p className="flex justify-between"><span className="text-slate-400">Password:</span> <span className="font-mono">password</span></p>
           </div>
+        </div>
+
+        <div className="mt-6 text-center">
+           <p className="text-[10px] text-slate-600">By continuing, you agree to our Terms & Privacy Policy.</p>
         </div>
       </Card>
     </div>
@@ -591,6 +566,19 @@ const AdminLayout: React.FC<{ user: User; onLogout: () => void; children: React.
   );
 };
 
+// Helper component to render dashboard metric cards
+const DashboardStats = ({ stats }: { stats: { label: string; value: string | number; subValue: string }[] }) => (
+  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+    {stats.map((stat, i) => (
+      <Card key={i}>
+        <p className="text-slate-400 text-sm font-medium">{stat.label}</p>
+        <p className="text-3xl font-black text-white mt-1">{stat.value}</p>
+        <p className="text-[10px] text-slate-500 font-bold mt-2 uppercase tracking-tight">{stat.subValue}</p>
+      </Card>
+    ))}
+  </div>
+);
+
 const AdminDashboard = ({ db }: { db: any }) => {
   const chartData = [
     { name: 'Mon', signups: 12, completions: 45 },
@@ -845,7 +833,7 @@ const ProofApprovals = ({ proofs, onReview }: { proofs: TaskProof[], onReview: (
 
 const App: React.FC = () => {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
-  const [page, setPage] = useState('home');
+  const [page, setPage] = useState('auth');
   const [activeTask, setActiveTask] = useState<Task | null>(null);
   
   const { 
@@ -860,13 +848,13 @@ const App: React.FC = () => {
       if (currentUser.role === UserRole.ADMIN) setPage('admin-dashboard');
       else setPage('dashboard');
     } else {
-      setPage('home');
+      setPage('auth');
     }
   }, [currentUser]);
 
   const handleLogout = () => {
     setCurrentUser(null);
-    setPage('home');
+    setPage('auth');
   };
 
   const handleTaskSubmit = (screenshot: string) => {
@@ -885,9 +873,7 @@ const App: React.FC = () => {
 
   // --- Router ---
   
-  if (page === 'home') return <LandingPage onNavigate={setPage} />;
-  if (page === 'login') return <LoginPage onLogin={setCurrentUser} />;
-  if (page === 'register') return <LoginPage onLogin={setCurrentUser} />; // Simplified
+  if (!currentUser) return <AuthPage onLogin={setCurrentUser} />;
 
   // Role: User Views
   if (currentUser?.role === UserRole.USER) {
