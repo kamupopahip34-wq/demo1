@@ -67,13 +67,22 @@ const INITIAL_DATA = {
 
 export const useStore = () => {
   const [db, setDb] = useState(() => {
-    const saved = localStorage.getItem(STORAGE_KEY);
-    return saved ? JSON.parse(saved) : INITIAL_DATA;
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      return saved ? JSON.parse(saved) : INITIAL_DATA;
+    } catch (e) {
+      console.error("Failed to parse storage, resetting to initial data", e);
+      return INITIAL_DATA;
+    }
   });
 
   const save = (newDb: any) => {
     setDb(newDb);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(newDb));
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(newDb));
+    } catch (e) {
+      console.error("Failed to save to local storage", e);
+    }
   };
 
   // Auth
